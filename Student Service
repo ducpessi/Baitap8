@@ -1,0 +1,45 @@
+using System;
+using System.Collections.Generic;
+using System.Data.Entity.Migrations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using DAL;
+
+namespace BUS
+{
+    public class StudentService
+    {
+
+        public List<student> GetAll()
+        {
+            Model1 context = new Model1();
+            return context.students.ToList();
+        }
+
+        public List<student> GetAllHasNoMajor()
+        {
+            Model1 context = new Model1();
+            return context.students.Where(p => p.MajorID == null).ToList();
+        }
+
+        public List<student> GetAllHasNoMajor(int facultyID)
+        {
+            Model1 context = new Model1();
+            return context.students.Where(p => p.MajorID == null && p.FacultyID == facultyID).ToList();
+        }
+
+        public student FindById(string studentId) {
+            Model1 context = new Model1();
+            return context.students.FirstOrDefault(p => p.StudentID == studentId);
+        }
+
+        public void InsertUpdate(student s)
+        {
+            Model1 context = new Model1();
+            context.students.AddOrUpdate(s);
+            context.SaveChanges();
+        }
+    }
+}
+
