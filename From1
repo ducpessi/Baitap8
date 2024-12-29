@@ -1,0 +1,94 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Configuration;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using BUS;
+using DAL;
+
+namespace GUI2
+{
+    public partial class Form1 : Form
+    {
+        private readonly StudentService studentService = new StudentService();
+        private readonly FacultyService facultyService = new FacultyService();
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void Form1_Load_1(object sender, EventArgs e)
+        {
+            try
+            {
+                setGridViewStyle(dgvStudent);
+                var listFacultys = facultyService.GetAll();
+                var listStudents = studentService.GetAll();
+                FillFacultyCombobox(listFacultys);
+                BindGrid(listStudents);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+        private void FillFacultyCombobox(List<Faculty> listFacultys)
+        {
+            listFacultys.Insert(0, new Faculty());
+            this.cmbFaculty.DataSource = listFacultys;
+            this.cmbFaculty.DisplayMember = "FacultyName";
+            this.cmbFaculty.ValueMember = "FacultyID";
+        }
+        private void BindGrid(List<student> listStudent)
+        {
+            dgvStudent.Columns.Clear(); // Xóa tất cả các cột trước khi thêm
+            dgvStudent.Columns.Add("StudentID", "Student ID"); // Tên cột và tiêu đề
+            dgvStudent.Columns.Add("FullName", "Full Name");
+            dgvStudent.Columns.Add("FacultyName", "Faculty Name");
+            dgvStudent.Columns.Add("AverageScore", "Average Score");
+            dgvStudent.Columns.Add("MajorName", "Major Name");
+            dgvStudent.Rows.Clear();
+            foreach (var item in listStudent)
+            {
+                int index = dgvStudent.Rows.Add();
+                dgvStudent.Rows[index].Cells[0].Value = item.StudentID;
+                dgvStudent.Rows[index].Cells[1].Value = item.FullName;
+                if (item.Faculty!= null)
+                    dgvStudent.Rows[index].Cells[2].Value = item.Faculty.FacultyName;
+                dgvStudent.Rows[index].Cells[3].Value = item.AverageScore + "";
+
+                if (item.MajorID != null)   
+                  
+                ShowAvatar(item.Avatar);
+            }
+        }
+        private void ShowAvatar(string ImageName)
+        {
+            if (string.IsNullOrEmpty(ImageName))
+            {
+                picAvatar.Image = null;
+            }
+            else {
+                string parentDirectory =
+                    Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.FullName;
+                string imagePath = Path.Combine(parentDirectory, "Images", ImageName);
+                picAvatar.Image = Image.FromFile(imagePath);
+                picAvatar.Refresh();
+            }
+        }
+        public void setGridViewStyle(DataGridView dgview)
+        {
+            dgview.BorderStyle = BorderStyle.None;
+            dgview.DefaultCellStyle.SelectionBackColor = Color.DarkTurquoise;
+            dgview.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            dgview.BackgroundColor = Color.White;
+            dgview.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        }
+    }
+}
